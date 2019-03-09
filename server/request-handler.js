@@ -12,6 +12,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+var obj = {results: []};
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -21,7 +22,6 @@ var requestHandler = function(request, response) {
   //
   // Documentation for both request and response can be found in the HTTP section at
   // http://nodejs.org/documentation/api/
-  var obj = {results: []};
 
   // Do some basic logging.
   //
@@ -44,21 +44,26 @@ var requestHandler = function(request, response) {
 
   var headers = defaultCorsHeaders;
 
-  let body = []; //body is an array
+  // let body = []; //body is an array
 
   if (request.method === 'GET' && request.url === '/classes/messages') {
     response.writeHead(200, headers)
+    response.end(JSON.stringify(obj));
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
+    let body = []; //body is an array
     request.on('data', (chunk) => {
       body.push(chunk);
     }).on('end', () => {
       body = Buffer.concat(body).toString();
+      body = JSON.parse(body);
+      obj.results.push(body);
   // at this point, `body` has the entire request body stored in it as a string
     });
     response.writeHead(201, headers)
-    console.log(body)
+    response.end('Successful post')
   } else {
     response.writeHead(404, headers)
+    response.end('Failed')
   }
 
   // Tell the client we are sending them plain text.
